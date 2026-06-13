@@ -51,9 +51,9 @@ Screenshots or Demo:
 - Deployed Link: Not available yet (currently running locally).
 - Demo Video Link: To be added.
 - Screenshots:
-  - [Ingestion Flow](src/screenshots/ingestion.png)
-  - [Query Flow](src/screenshots/query.png)
-  - [Follow-up Query Flow](src/screenshots/subquery.png)
+  - ![Ingestion Flow](src/screenshots/ingestion.png)
+  - ![Query Flow](src/screenshots/query.png)
+  - ![Follow-up Query Flow](src/screenshots/subquery.png)
 
 Learnings:
 - Slack bot integration: Learned how to integrate a Slack app using Bolt with Socket Mode, handle events like mentions/file uploads, and design a smooth chat-first support workflow.
