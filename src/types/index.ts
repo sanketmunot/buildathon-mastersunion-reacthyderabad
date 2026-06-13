@@ -1,6 +1,6 @@
 export type Intent = "upload" | "question" | "summary";
 
-export type SourceType = "pdf" | "url" | "text";
+export type SourceType = "pdf" | "docx" | "txt" | "url" | "text";
 
 export type SemanticMetadata = {
   entities: string[];
@@ -44,6 +44,18 @@ export type IngestionInput =
       sourceUrl?: string;
       fileBuffer: Buffer;
       text?: string;
+    }
+  | {
+      sourceType: "docx";
+      sourceName: string;
+      sourceUrl?: string;
+      fileBuffer: Buffer;
+    }
+  | {
+      sourceType: "txt";
+      sourceName: string;
+      sourceUrl?: string;
+      fileBuffer: Buffer;
     }
   | {
       sourceType: "url";

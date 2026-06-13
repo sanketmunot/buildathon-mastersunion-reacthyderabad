@@ -1,8 +1,26 @@
 import type { AllMiddlewareArgs, SlackEventMiddlewareArgs } from "@slack/bolt";
-import { ACK_SEARCHING } from "../../config/constants";
+import { ACK_INDEXING, ACK_SEARCHING } from "../../config/constants";
 import { runWorkflow } from "../../graph/workflow";
 
 type MentionArgs = SlackEventMiddlewareArgs<"app_mention"> & AllMiddlewareArgs;
+
+function extractFirstUrl(text: string): string | null {
+  const match = text.match(/https?:\/\/[^\s>|]+/i);
+  return match?.[0] ?? null;
+}
+
+function sourceNameFromUrl(url: string): string {
+  try {
+    const parsed = new URL(url);
+    const pathname = parsed.pathname.replace(/^\/+/, "");
+    if (pathname) {
+      return `${parsed.hostname}-${pathname.replace(/[^\w.-]+/g, "_")}`;
+    }
+    return `${parsed.hostname}-page`;
+  } catch {
+    return "url-source";
+  }
+}
 
 export async function handleMention(args: MentionArgs): Promise<void> {
   const { event, say } = args;
@@ -23,11 +41,16 @@ export async function handleMention(args: MentionArgs): Promise<void> {
 
   const question = event.text ?? "";
   const threadTs = event.thread_ts ?? event.ts;
+  const isMainMessage = !event.thread_ts;
+  const firstUrl = extractFirstUrl(question);
+  const shouldIngestUrl = isMainMessage && !!firstUrl;
   // eslint-disable-next-line no-console
-  console.log(`[mention] start threadTs=${threadTs}`);
+  console.log(
+    `[mention] start threadTs=${threadTs} shouldIngestUrl=${shouldIngestUrl}`,
+  );
 
   await say({
-    text: ACK_SEARCHING,
+    text: shouldIngestUrl ? ACK_INDEXING : ACK_SEARCHING,
     thread_ts: threadTs,
   });
   // eslint-disable-next-line no-console
@@ -37,10 +60,21 @@ export async function handleMention(args: MentionArgs): Promise<void> {
     try {
       // eslint-disable-next-line no-console
       console.log(`[mention] workflow begin threadTs=${threadTs}`);
-      const result = await runWorkflow({
-        userMessage: question,
-        threadTs,
-      });
+      const result = shouldIngestUrl
+        ? await runWorkflow({
+            userMessage: `upload ${sourceNameFromUrl(firstUrl ?? "")}`,
+            threadTs,
+            ingestionInput: {
+              sourceType: "url",
+              sourceName: sourceNameFromUrl(firstUrl ?? ""),
+              sourceUrl: firstUrl ?? undefined,
+              url: firstUrl ?? "",
+            },
+          })
+        : await runWorkflow({
+            userMessage: question,
+            threadTs,
+          });
 
       await say({
         text: result.answer ?? "Unable to process request.",
