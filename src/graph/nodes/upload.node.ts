@@ -7,9 +7,13 @@ export async function uploadNode(state: GraphState): Promise<GraphState> {
   }
 
   const result = await ingestionService.ingest(state.ingestionInput);
+  const answer = result.alreadyIndexed
+    ? `This file is already indexed. Reusing existing document ID: ${result.documentId}`
+    : `Indexed ${state.ingestionInput.sourceName} (${result.chunkCount} chunks). Document ID: ${result.documentId}`;
+
   return {
     ...state,
-    answer: `Indexed ${state.ingestionInput.sourceName} (${result.chunkCount} chunks). Document ID: ${result.documentId}`,
+    answer,
     citations: [result.sourcePath],
   };
 }

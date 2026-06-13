@@ -28,6 +28,18 @@ export class DocumentsDb {
     return rows.filter((row) => row.documentId === documentId);
   }
 
+  async findByChecksum(checksum: string): Promise<ChunkRecord | null> {
+    await this.init();
+    const rows = await lanceDbService.allRows();
+    return rows.find((row) => row.checksum === checksum) ?? null;
+  }
+
+  async findBySourceUrl(sourceUrl: string): Promise<ChunkRecord | null> {
+    await this.init();
+    const rows = await lanceDbService.allRows();
+    return rows.find((row) => row.sourceUrl === sourceUrl) ?? null;
+  }
+
   async findRelatedByMetadata(params: {
     tags: string[];
     relatedConcepts: string[];

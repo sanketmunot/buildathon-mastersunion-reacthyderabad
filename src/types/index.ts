@@ -11,6 +11,7 @@ export type SemanticMetadata = {
 export type ChunkRecord = {
   id: string;
   documentId: string;
+  checksum: string;
   sourceName: string;
   sourceUrl?: string;
   sourceType: SourceType;
@@ -62,4 +63,6 @@ export type IngestionResult = {
   chunkCount: number;
   sourcePath: string;
   extractedTextPath: string;
+  alreadyIndexed: boolean;
+  checksum: string;
 };
